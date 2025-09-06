@@ -9,7 +9,7 @@ st.title("✈️하늘길을 밝히다: 대한민국의 항공 관제 현황")
 st.markdown("---")
 
 # 📂 파일 경로 설정 및 데이터 로드
-file_name = "관제탑_관제량_20250906112544.xlsx - 데이터.csv"
+file_name = "meals_data.csv"
 
 # 파일 존재 여부 확인
 if not os.path.exists(file_name):
@@ -58,7 +58,7 @@ except Exception as e:
     st.error(f"데이터 전처리 중 오류가 발생했습니다. 원본 파일의 형식이 올바른지 확인해주세요. 오류: {e}")
     st.stop()
 
-# ---
+
 ## 📊 사용자 선택 및 시각화
 
 st.header("📈 공항별 월별 관제량 시각화")
@@ -93,7 +93,7 @@ else:
     
     st.write("※ 그래프는 2024년 11월부터 2025년 4월까지의 월별 관제량 데이터를 나타냅니다.")
 
-# ---
+
 ## 📋 원본 데이터
 
 st.subheader("📋 원본 데이터")
