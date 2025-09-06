@@ -18,25 +18,30 @@ if not os.path.exists(file_name):
 
 # 파일 인코딩 문제 해결을 위한 try-except 블록
 try:
-    # 헤더가 있는 행을 찾아서 로드
-    df_raw = pd.read_csv(file_name, encoding='cp949', header=None)
-    header_row = df_raw.iloc[:, 0].eq('지역(1)').idxmax()
-    df = pd.read_csv(file_name, encoding='cp949', skiprows=header_row)
-
+    df = pd.read_csv(file_name, encoding='utf-8')
 except UnicodeDecodeError:
-    st.error("오류: 파일 인코딩을 감지할 수 없습니다. 파일을 메모장으로 열어 UTF-8 형식으로 다시 저장해주세요.")
-    st.stop()
+    try:
+        df = pd.read_csv(file_name, encoding='cp949')
+    except UnicodeDecodeError:
+        st.error("오류: 파일 인코딩을 감지할 수 없습니다. 파일을 메모장으로 열어 UTF-8 형식으로 다시 저장해주세요.")
+        st.stop()
 except Exception as e:
     st.error(f"파일을 읽는 도중 예상치 못한 오류가 발생했습니다: {e}")
     st.stop()
 
 # 🧹 데이터 전처리
 try:
-    # '지역(1)' 열을 '지역'으로 이름 변경
-    df = df.rename(columns={'지역(1)': '지역'})
-    
-    # '합계' 행 제거
-    df = df[df['지역'] != '합계'].copy()
+    # '지역(1)' 또는 첫 번째 열을 '지역'으로 이름 변경
+    if '지역(1)' in df.columns:
+        df = df.rename(columns={'지역(1)': '지역'})
+    else:
+        df = df.rename(columns={df.columns[0]: '지역'})
+
+    # '합계' 행과 불필요한 메타데이터 행 제거
+    df = df[df['지역'].notna() & (df['지역'] != '합계')]
+
+    # '지역' 열을 인덱스로 설정
+    df = df.set_index('지역')
     
     # 열 이름에서 연도 정보 제거 후 '월' 추가 (예: '2024.11' -> '11월')
     new_columns = []
@@ -46,10 +51,7 @@ try:
         else:
             new_columns.append(col)
     df.columns = new_columns
-    
-    # '지역' 열을 인덱스로 설정
-    df = df.set_index('지역')
-    
+
     # 데이터프레임 구조 변경 (시각화를 위해)
     df_long = df.reset_index().melt(id_vars='지역', var_name='월', value_name='관제량')
     df_long['관제량'] = pd.to_numeric(df_long['관제량'], errors='coerce')
