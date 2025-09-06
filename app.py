@@ -11,10 +11,10 @@ st.markdown("---")
 try:
     df = pd.read_csv("관제탑_관제량_20250906112544.xlsx", encoding='utf-8')
 except FileNotFoundError:
-    st.error("파일을 찾을 수 없습니다. '관제탑_관제량_20250906112544.xlsx - 데이터.csv' 파일이 스크립트와 같은 경로에 있는지 확인해주세요.")
+    st.error("파일을 찾을 수 없습니다. '관제탑_관제량_20250906112544.xlsx' 파일이 스크립트와 같은 경로에 있는지 확인해주세요.")
     st.stop()
 except UnicodeDecodeError:
-    df = pd.read_csv("관제탑_관제량_20250906112544.xlsx - 데이터.csv", encoding='cp949')
+    df = pd.read_csv("관제탑_관제량_20250906112544.xlsx", encoding='cp949')
 
 # 데이터 정리: '지역(1)' 열을 인덱스로 설정
 df = df.rename(columns={'지역(1)': '지역'})
