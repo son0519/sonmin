@@ -9,7 +9,7 @@ st.markdown("---")
 
 # 파일 로드 및 데이터 전처리
 try:
-    df = pd.read_csv("관제탑_관제량_20250906112544.xlsx - 데이터.csv", encoding='utf-8')
+    df = pd.read_csv("관제탑_관제량_20250906112544.xlsx", encoding='utf-8')
 except FileNotFoundError:
     st.error("파일을 찾을 수 없습니다. '관제탑_관제량_20250906112544.xlsx - 데이터.csv' 파일이 스크립트와 같은 경로에 있는지 확인해주세요.")
     st.stop()
