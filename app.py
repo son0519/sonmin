@@ -9,7 +9,7 @@ st.title("✈️하늘길을 밝히다: 대한민국의 항공 관제 현황")
 st.markdown("---")
 
 # 📂 파일 경로 설정 및 데이터 로드
-file_name = "meals_data.csv"
+file_name = "관제탑_관제량_20250906112544.xlsx - 데이터.csv"
 
 # 파일 존재 여부 확인
 if not os.path.exists(file_name):
@@ -18,32 +18,26 @@ if not os.path.exists(file_name):
 
 # 파일 인코딩 문제 해결을 위한 try-except 블록
 try:
-    df = pd.read_csv(file_name, encoding='utf-8')
+    # 헤더가 있는 행을 찾아서 로드
+    df_raw = pd.read_csv(file_name, encoding='cp949', header=None)
+    header_row = df_raw.iloc[:, 0].eq('지역(1)').idxmax()
+    df = pd.read_csv(file_name, encoding='cp949', skiprows=header_row)
+
 except UnicodeDecodeError:
-    try:
-        df = pd.read_csv(file_name, encoding='cp949')
-    except UnicodeDecodeError:
-        st.error("오류: 파일 인코딩을 감지할 수 없습니다. 파일을 메모장으로 열어 UTF-8 형식으로 다시 저장해주세요.")
-        st.stop()
+    st.error("오류: 파일 인코딩을 감지할 수 없습니다. 파일을 메모장으로 열어 UTF-8 형식으로 다시 저장해주세요.")
+    st.stop()
 except Exception as e:
     st.error(f"파일을 읽는 도중 예상치 못한 오류가 발생했습니다: {e}")
     st.stop()
 
 # 🧹 데이터 전처리
 try:
-    # 첫 번째 열을 '지역'으로 가정하고 이름 변경
-    df = df.rename(columns={df.columns[0]: '지역'})
+    # '지역(1)' 열을 '지역'으로 이름 변경
+    df = df.rename(columns={'지역(1)': '지역'})
     
-    # '합계' 행 제거 (대소문자 및 공백을 고려)
-    if '합계' in df['지역'].values:
-        df = df[df['지역'] != '합계']
+    # '합계' 행 제거
+    df = df[df['지역'] != '합계'].copy()
     
-    # 불필요한 첫 행 제거 (만약 필요하다면)
-    df = df.iloc[1:, :]
-    
-    # '지역' 열을 인덱스로 설정
-    df = df.set_index('지역')
-
     # 열 이름에서 연도 정보 제거 후 '월' 추가 (예: '2024.11' -> '11월')
     new_columns = []
     for col in df.columns:
@@ -52,7 +46,10 @@ try:
         else:
             new_columns.append(col)
     df.columns = new_columns
-
+    
+    # '지역' 열을 인덱스로 설정
+    df = df.set_index('지역')
+    
     # 데이터프레임 구조 변경 (시각화를 위해)
     df_long = df.reset_index().melt(id_vars='지역', var_name='월', value_name='관제량')
     df_long['관제량'] = pd.to_numeric(df_long['관제량'], errors='coerce')
@@ -96,8 +93,7 @@ else:
     
     st.write("※ 그래프는 2024년 11월부터 2025년 4월까지의 월별 관제량 데이터를 나타냅니다.")
 
-
-
+# ---
 ## 📋 원본 데이터
 
 st.subheader("📋 원본 데이터")
